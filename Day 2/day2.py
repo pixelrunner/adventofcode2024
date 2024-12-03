@@ -68,58 +68,35 @@ def part1(list_of_lines):
 def has_duplicates(input_list):
     return len(input_list) != len(set(input_list))
 
-def isIncreasingDecreasing(listLines):
-    for line in listLines:
-        if has_duplicates(line):
-            safe = False
+def isIncreasingDecreasing(lineToTest):
+    if has_duplicates(lineToTest):
+        safe = False
+    else:
+        # set up increase/decrease indicator
+        # -1 = decreasing series
+        # 1 = increasing series
+        # 0 = initialised var (not calculated any yet)
+        increaseDecrease = 0
+
+        # set safe var
+        safe = True
+
+        increasingLine = sorted(lineToTest)
+        decreasingLine = sorted(lineToTest, reverse=True)
+
+
+        if lineToTest == increasingLine:
+            increaseDecrease = 1
+        elif lineToTest == decreasingLine:
+            increaseDecrease = -1
         else:
-            # set up increase/decrease indicator
-            # -1 = decreasing series
-            # 1 = increasing series
-            # 0 = initialised var (not calculated any yet)
-            increaseDecrease = 0
+            safe = False
 
-            # set safe var
-            safe = True
-
-            increasingLine = sorted(line)
-            decreasingLine = sorted(line, reverse=True)
+    if safe:
+        return increaseDecrease
+    return 0
 
 
-            if line == increasingLine:
-                increaseDecrease = 1
-            elif line == decreasingLine:
-                increaseDecrease = -1
-            else:
-                safe = False
-
-        if safe:
-            return increaseDecrease, line
-    return 0, []
-
-def buildFullListWith1BadLevelAllowed(inputList):
-    # fullList = []
-    subSubList = []
-    outputSubList = []
-
-    # Loop through the inputList by index
-    for i in range(len(inputList)):
-        # Create a copy of the original list
-        subInputList = inputList[i]
-        subSubList = []
-        subSubList.append(subInputList)
-
-        for x in range(len(subInputList)):
-            # Create a new copy of subInputList for each iteration
-            subList = subInputList[:]
-            # Remove the element at index x
-            subList.pop(x)
-            # Append the new sublist to the result list
-            subSubList.append(subList)
-
-        outputSubList.append(subSubList)
-    # fullList.append(outputSubList)
-    return outputSubList
 
 def workOutDifferences(list, maxDifference, increaseDecrease):
     # let's work out the differences
@@ -134,22 +111,46 @@ def workOutDifferences(list, maxDifference, increaseDecrease):
         x += 1
     return True
 
+def findSafeLines(singleLine):
+    allIncreasingDecreasingLines = []
+    increasingDecreasing = 0
+
+    # first test original line then start popping one at a time
+    increasingDecreasingTestResult = isIncreasingDecreasing(singleLine)
+    if increasingDecreasingTestResult != 0:
+        allIncreasingDecreasingLines.append(singleLine)
+        increasingDecreasing = increasingDecreasingTestResult
+
+    for i in range(len(singleLine)):
+        # Create a new copy of subInputList for each iteration
+        listToPop = singleLine[:]
+        # Remove the element at index i
+        listToPop.pop(i)
+        # test new list
+        increasingDecreasingTestResult = isIncreasingDecreasing(listToPop)
+        if increasingDecreasingTestResult != 0:
+            allIncreasingDecreasingLines.append(listToPop)
+            increasingDecreasing = increasingDecreasingTestResult
+
+    # now we have a list of all increasing and decreasing lines in a list
+    # test each one until we find a safe item in the list and return safe (else return unsafe)
+    for line in allIncreasingDecreasingLines:
+        safeLine = workOutDifferences(line, 3, increasingDecreasing)
+
+        if safeLine:
+            return True
+
+    return False
+
 def part2(list_of_lines):
     unsafeCount = 0
     safeCount = 0
-    fullListOfLines = buildFullListWith1BadLevelAllowed(list_of_lines)
 
-    for individualList in fullListOfLines:
-        increaseDecrease, workingList = isIncreasingDecreasing(individualList)
-
-        if increaseDecrease == 0:
-            unsafeCount += 1
+    for singleLine in list_of_lines:
+        if findSafeLines(singleLine):
+            safeCount += 1
         else:
-            isItSafe = workOutDifferences(workingList,3,increaseDecrease)
-            if isItSafe:
-                safeCount += 1
-            else:
-                unsafeCount += 1
+            unsafeCount += 1
 
     return safeCount, unsafeCount
 
