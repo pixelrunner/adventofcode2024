@@ -168,7 +168,7 @@ def part2(wordsearch):
                 masFound = True
                 for mLocation in mLocations:
                     # go through each M and see if an S exists on other side of A
-                    # location position is where the letter is located with base 0
+                    # location position is where the letter is located with base 0.
                     if searchForOppositeLetter(aLocation, mLocation, "S", wordsearch) == False:
                         masFound = False
 
